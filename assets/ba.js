@@ -2,6 +2,7 @@
   // Zastepuje runtime WebWave: tryby RWD, lazy-load obrazow, kadrowanie, poradnik, liczniki, menu mobilne, formularz, kotwice.
   var MODES = [[1200, 'rwdMode_1'], [768, 'rwdMode_2'], [480, 'rwdMode_3'], [0, 'rwdMode_4']];
   var FIT = { imageCrop: 'cover', imageFit: 'contain', imageStretch: 'fill' };
+  var HAMBURGER = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="rgb(159,189,224)"><path d="M5.5 8.5h21a1 1 0 0 1 0 2h-21a1 1 0 0 1 0-2zm0 6.5h21a1 1 0 0 1 0 2h-21a1 1 0 0 1 0-2zm0 6.5h21a1 1 0 0 1 0 2h-21a1 1 0 0 1 0-2z"/></svg>');
   function mode() {
     var w = window.innerWidth;
     for (var i = 0; i < MODES.length; i++) if (w >= MODES[i][0]) return MODES[i][1];
@@ -29,6 +30,8 @@
       if (s && /^data:/.test(el.getAttribute('src') || 'data:')) el.setAttribute('src', s);
     });
     document.querySelectorAll('img.image-uninitialized').forEach(function (el) { el.classList.remove('image-uninitialized'); });
+    var icon = document.querySelector('.mobileMenuIcon');
+    if (icon && !icon.getAttribute('src')) { icon.setAttribute('src', HAMBURGER); icon.style.height = '100%'; }
     var menu = document.querySelector('.ww_menu_content');
     var menuObj = menu && menu.closest('.w-object');
     if (menuObj) menuObj.classList.toggle('mobileMenu', m !== 'rwdMode_1');
@@ -41,16 +44,33 @@
     });
   }
 
-  // Poradnik (newsfeed): 3 kolumny na szerokim ekranie, 1 na waskim
+  // Poradnik (newsfeed): 3 kolumny na szerokim ekranie, 1 na waskim + strzalki
   function layoutFeed() {
     document.querySelectorAll('.feed_content').forEach(function (fc) {
       var W = fc.parentElement.clientWidth;
       var items = fc.querySelectorAll('.feed_item');
       var cols = W >= 700 ? Math.min(3, items.length) : 1;
+      var pages = Math.ceil(items.length / cols);
+      var page = (parseInt(fc.getAttribute('data-ba-page'), 10) || 0) % pages;
       var iw = Math.floor((W - (cols - 1) * 16) / cols);
+      var root = fc.closest('.w-object') || fc.parentElement;
+      root.querySelectorAll('.feed_pagination_prev_icon, .feed_pagination_next_icon').forEach(function (a) {
+        a.style.display = pages > 1 ? '' : 'none';
+        a.style.cursor = 'pointer';
+        if (!a.getAttribute('data-ba-bound')) {
+          a.setAttribute('data-ba-bound', '1');
+          a.addEventListener('click', function (e) {
+            e.preventDefault();
+            var d = a.classList.contains('feed_pagination_prev_icon') ? -1 : 1;
+            var p = (parseInt(fc.getAttribute('data-ba-page'), 10) || 0) + d;
+            fc.setAttribute('data-ba-page', String((p + 100 * pages) % pages));
+            layoutFeed();
+          });
+        }
+      });
       fc.style.cssText = 'width:' + W + 'px;display:flex;flex-wrap:wrap;gap:16px';
-      items.forEach(function (it) {
-        it.style.cssText = 'display:block;float:none;margin:0;width:' + iw + 'px';
+      items.forEach(function (it, idx) {
+        it.style.cssText = 'float:none;margin:0;width:' + iw + 'px;display:' + (Math.floor(idx / cols) === page ? 'block' : 'none');
         it.querySelectorAll('.feed_thumbnail_wrapper,.feed_thumbnail,.feed_thumbnail_image').forEach(function (e) {
           e.style.width = iw + 'px';
           e.style.height = Math.round(iw * 259 / 389) + 'px';

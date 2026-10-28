@@ -59,8 +59,7 @@
 
 html{scroll-behavior:smooth}
 [id^="wSection"],[id^="element_"]{scroll-margin-top:80px}
-.ww_menu_content_wrapper.ww_menu_mobile.ba-open{display:block!important;background:#141414;padding:70px 24px 24px;min-width:260px;box-shadow:-8px 0 24px rgba(0,0,0,.35);z-index:1000}
+.ww_menu_content_wrapper.ww_menu_mobile.ba-open{display:block!important;position:fixed!important;top:0!important;right:0!important;left:auto!important;height:100vh!important;width:min(300px,85vw)!important;box-sizing:border-box;background:#141414!important;padding:70px 24px 24px;min-width:260px;box-shadow:-8px 0 24px rgba(0,0,0,.35);z-index:1000}
 .ww_menu_content_wrapper.ww_menu_mobile.ba-open .ww_menu_item{display:block}
 .mobileMenu .ww_menu_content .mobileMenuIcon{z-index:1001}
 .feed_item a{cursor:pointer}
-[class*=feed_pagination]{display:none!important}
