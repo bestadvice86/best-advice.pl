@@ -1,6 +1,7 @@
 (function () {
-  // Zastepuje runtime WebWave: tryby RWD, lazy-load obrazow, menu mobilne, formularz, kotwice.
+  // Zastepuje runtime WebWave: tryby RWD, lazy-load obrazow, kadrowanie, poradnik, liczniki, menu mobilne, formularz, kotwice.
   var MODES = [[1200, 'rwdMode_1'], [768, 'rwdMode_2'], [480, 'rwdMode_3'], [0, 'rwdMode_4']];
+  var FIT = { imageCrop: 'cover', imageFit: 'contain', imageStretch: 'fill' };
   function mode() {
     var w = window.innerWidth;
     for (var i = 0; i < MODES.length; i++) if (w >= MODES[i][0]) return MODES[i][1];
@@ -8,6 +9,7 @@
   var cur = null;
   function apply() {
     var m = mode();
+    layoutFeed();
     if (m === cur) return;
     cur = m;
     document.querySelectorAll('[data-ww_rwd]').forEach(function (el) {
@@ -16,20 +18,77 @@
       if (j['class'] && j['class'][m] != null) el.className = j['class'][m];
       var ls = j['data-lazy-load-src'];
       if (ls && ls[m]) el.setAttribute('src', ls[m]);
-      ['backgroundSize', 'backgroundPosition'].forEach(function (k) {
-        if (j[k] && j[k][m] != null) el.style[k] = j[k][m];
-      });
+      if (el.tagName === 'IMG' && el.parentElement && el.parentElement.classList.contains('ww_image_wrapper')) {
+        var bs = (j.backgroundSize && j.backgroundSize[m]) || el.getAttribute('backgroundsize');
+        var bp = (j.backgroundPosition && j.backgroundPosition[m]) || el.getAttribute('backgroundposition') || '50% 50%';
+        el.style.cssText = 'width:100%;height:100%;object-fit:' + (FIT[bs] || 'cover') + ';object-position:' + bp;
+      }
     });
     document.querySelectorAll('img[data-lazy-load-src]').forEach(function (el) {
       var s = el.getAttribute('data-lazy-load-src');
       if (s && /^data:/.test(el.getAttribute('src') || 'data:')) el.setAttribute('src', s);
     });
+    document.querySelectorAll('img.image-uninitialized').forEach(function (el) { el.classList.remove('image-uninitialized'); });
     var menu = document.querySelector('.ww_menu_content');
     var menuObj = menu && menu.closest('.w-object');
     if (menuObj) menuObj.classList.toggle('mobileMenu', m !== 'rwdMode_1');
     closeMenu();
   }
 
+  function lazyStyles() {
+    document.querySelectorAll('[data-lazy-load-style]').forEach(function (el) {
+      el.setAttribute('style', (el.getAttribute('style') || '') + ';' + el.getAttribute('data-lazy-load-style'));
+    });
+  }
+
+  // Poradnik (newsfeed): 3 kolumny na szerokim ekranie, 1 na waskim
+  function layoutFeed() {
+    document.querySelectorAll('.feed_content').forEach(function (fc) {
+      var W = fc.parentElement.clientWidth;
+      var items = fc.querySelectorAll('.feed_item');
+      var cols = W >= 700 ? Math.min(3, items.length) : 1;
+      var iw = Math.floor((W - (cols - 1) * 16) / cols);
+      fc.style.cssText = 'width:' + W + 'px;display:flex;flex-wrap:wrap;gap:16px';
+      items.forEach(function (it) {
+        it.style.cssText = 'display:block;float:none;margin:0;width:' + iw + 'px';
+        it.querySelectorAll('.feed_thumbnail_wrapper,.feed_thumbnail,.feed_thumbnail_image').forEach(function (e) {
+          e.style.width = iw + 'px';
+          e.style.height = Math.round(iw * 259 / 389) + 'px';
+          if (e.classList.contains('feed_thumbnail')) e.style.display = 'block';
+        });
+      });
+    });
+  }
+
+  // Liczniki (animacja od 0 do wartosci, jak w WebWave)
+  function counters() {
+    var ids = ['element_533_content', 'element_535_content', 'element_537_content', 'element_539_content'];
+    var els = ids.map(function (id) { return document.querySelector('#' + id + ' h2'); }).filter(Boolean);
+    if (!els.length || !('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        io.unobserve(en.target);
+        var h = en.target, end = parseInt(h.getAttribute('data-ba-end'), 10), t0 = null;
+        function step(t) {
+          if (!t0) t0 = t;
+          var p = Math.min(1, (t - t0) / 1500);
+          h.textContent = Math.round(end * (1 - Math.pow(1 - p, 3)));
+          if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+    }, { threshold: 0.5 });
+    els.forEach(function (h) {
+      var v = parseInt(h.textContent, 10);
+      if (isNaN(v)) return;
+      h.setAttribute('data-ba-end', v);
+      h.textContent = '0';
+      io.observe(h);
+    });
+  }
+
+  // Menu mobilne
   function wrapper() { return document.querySelector('.ww_menu_content_wrapper'); }
   function closeMenu() { var w = wrapper(); if (w) w.classList.remove('ba-open'); }
   document.addEventListener('click', function (e) {
@@ -39,11 +98,13 @@
     if (w && w.classList.contains('ba-open') && (e.target.closest('.ww_menu_item a') || !e.target.closest('.ww_menu_content_wrapper'))) closeMenu();
   });
 
+  // Stare linki ?anchorElement=... (Google Ads, zakladki)
   function anchorFromQuery() {
     var m = /[?&]anchorElement=([^&#]+)/.exec(location.search);
     if (m) { var el = document.getElementById(decodeURIComponent(m[1])); if (el) el.scrollIntoView(); }
   }
 
+  // Formularz kontaktowy -> FormSubmit (fallback: mailto)
   var ENDPOINT = 'https://formsubmit.co/ajax/sekretariat@best-advice.pl';
   function initForm(form) {
     var btn = form.querySelector('.ww_submit_button_content');
@@ -94,7 +155,9 @@
   }
 
   function init() {
+    lazyStyles();
     apply();
+    counters();
     document.querySelectorAll('form.ww_form').forEach(initForm);
     anchorFromQuery();
     document.documentElement.classList.add('ba-ready');
