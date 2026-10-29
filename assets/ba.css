@@ -63,3 +63,12 @@ html{scroll-behavior:smooth}
 .ww_menu_content_wrapper.ww_menu_mobile.ba-open .ww_menu_item{display:block}
 .mobileMenu .ww_menu_content .mobileMenuIcon{z-index:1001}
 .feed_item a{cursor:pointer}
+
+/* Przyciski: ramka zawsze w calosci widoczna (tekst nie wychodzi poza obrys) */
+.w-object[data-element-type="button"]{height:auto!important}
+.ww_button_content{height:auto!important;min-height:45px;overflow:visible!important}
+.ww_button_content > .ww_button_link{position:relative!important;display:block;height:auto!important;min-height:43px}
+.ww_button_text_wrapper{height:auto!important;min-height:43px;padding:4px 6px!important}
+/* Przycisk WYSLIJ: jasna ramka na ciemnym tle (wczesniej #141414 na ciemnym zdjeciu) */
+.ww_submit_button_content{border-color:var(--neutral1)!important;overflow:visible}
+.ww_submit_button_content:hover{border-color:var(--brand)!important}
