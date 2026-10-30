@@ -161,7 +161,7 @@
           if (j && (j.success === true || j.success === 'true')) {
             show(true);
             form.querySelectorAll('input, textarea').forEach(function (i) { i.value = ''; });
-            if (window.gtag) window.gtag('event', 'generate_lead');
+            if (window.baTrack) window.baTrack('form');
           } else throw new Error('fail');
         })
         .catch(function () {
