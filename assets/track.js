@@ -3,11 +3,11 @@
 (function () {
   var CFG = {
     ga4: '',            // np. 'G-XXXXXXXXXX' (Google Analytics 4)
-    ads: '',            // np. 'AW-1234567890' (Google Ads)
+    ads: 'AW-17865634857', // Google Ads – konto Best Advice Sp. z o. o. (913-755-8403)
     labels: {           // etykiety konwersji z Google Ads (część po ukośniku w send_to)
-      form: '',         // wysłany formularz kontaktowy
-      tel: '',          // kliknięcie numeru telefonu
-      mail: ''          // kliknięcie adresu e-mail
+      form: '1Xi1CJDN8q4dEKno_8ZC', // Formularz kontaktowy – best-advice.pl
+      tel: 'kN5UCJPN8q4dEKno_8ZC',  // Kliknięcie w telefon – best-advice.pl
+      mail: 'vLJpCJbN8q4dEKno_8ZC'  // Kliknięcie w e-mail – best-advice.pl
     }
   };
   var KEY = 'ba_consent_v1';
@@ -57,7 +57,7 @@
     d.setAttribute('role', 'dialog');
     d.setAttribute('aria-label', 'Zgoda na pliki cookie');
     d.innerHTML =
-      '<p>Używamy plików cookie Google Analytics i Google Ads, aby mierzyć ruch na stronie i skuteczność reklam. ' +
+      '<p>Za Twoją zgodą używamy plików cookie ' + (CFG.ga4 ? 'Google Analytics i Google Ads' : 'Google Ads') + ', aby mierzyć skuteczność naszych reklam (np. czy po kliknięciu reklamy wysłano zapytanie). ' +
       'Działają tylko po wyrażeniu zgody; możesz ją w każdej chwili zmienić, klikając „Ustawienia cookie” w stopce.</p>' +
       '<div class="ba-cookie-btns"><button type="button" data-v="no">Tylko niezbędne</button>' +
       '<button type="button" data-v="yes" class="ba-cookie-yes">Akceptuję</button></div>';
