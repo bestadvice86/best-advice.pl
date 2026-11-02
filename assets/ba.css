@@ -78,3 +78,4 @@ html{scroll-behavior:smooth}
 #ba-cookie .ba-cookie-btns{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
 #ba-cookie button{font:inherit;cursor:pointer;padding:8px 16px;border-radius:4px;border:1px solid #fff;background:transparent;color:#fff}
 #ba-cookie button.ba-cookie-yes{background:var(--brand,#f0fe6d);border-color:var(--brand,#f0fe6d);color:#141414;font-weight:600}
+#ba-cookie a{color:var(--brand,#f0fe6d);text-decoration:underline}
